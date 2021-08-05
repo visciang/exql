@@ -28,7 +28,7 @@ defmodule ExqlMigration do
           |> Enum.reject(&applied?(&1, last_migration))
 
         if migration_files == [] do
-          Logger.info("Nothing to do, all migration script already applied")
+          Logger.info("Nothing to do, all migration scripts already applied")
         else
           Enum.each(migration_files, &run(conn, &1, File.read!(Path.join(migrations_dir, &1)), timeout))
         end
