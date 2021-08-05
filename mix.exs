@@ -12,9 +12,14 @@ defmodule ExqlMigration.MixProject do
       preferred_cli_env: preferred_cli_env(),
       description: description(),
       package: package(),
-      dialyzer: [
-        plt_file: {:no_warn, "deps/dialyzer.plt"}
-      ]
+      dialyzer: dilayzer()
+    ]
+  end
+
+  defp dilayzer do
+    [
+      plt_file: {:no_warn, "deps/dialyzer.plt"},
+      plt_add_apps: [:postgrex, :db_connection]
     ]
   end
 
