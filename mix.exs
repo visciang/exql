@@ -10,30 +10,14 @@ defmodule ExqlMigration.MixProject do
       deps: deps(),
       test_coverage: [tool: ExCoveralls],
       preferred_cli_env: preferred_cli_env(),
-      description: description(),
-      package: package(),
-      dialyzer: dilayzer()
+      dialyzer: dialyzer()
     ]
   end
 
-  defp dilayzer do
+  defp dialyzer do
     [
       plt_file: {:no_warn, "deps/dialyzer.plt"},
       plt_add_apps: [:postgrex, :db_connection]
-    ]
-  end
-
-  defp description do
-    "Simple DB SQL migration script runner (no ecto_sql)."
-  end
-
-  defp package do
-    [
-      name: "dataspecs",
-      licenses: ["MIT"],
-      files: ["lib", "README.md", "LICENSE", "mix.exs"],
-      maintainers: ["Giovanni Visciano"],
-      links: %{"GitHub" => "https://github.com/visciang/exql_migration"}
     ]
   end
 

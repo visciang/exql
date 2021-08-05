@@ -12,7 +12,8 @@ defmodule ExqlMigration do
     Schema.setup(conn)
 
     Postgrex.transaction(
-      conn, fn conn ->
+      conn,
+      fn conn ->
         Log.lock(conn)
 
         last_migration = Log.last(conn)
