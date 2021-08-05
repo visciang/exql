@@ -50,7 +50,7 @@ defmodule ExqlMigration do
 
   @spec run(Postgrex.conn(), migration_id(), String.t(), timeout()) :: :ok
   defp run(conn, migration_id, statement, timeout) do
-    shasum = :crypto.hash(:sha256, statement) |> Base.encode16()
+    shasum = :crypto.hash(:sha256, statement) |> Base.encode16(case: :lower)
 
     Logger.info("[#{migration_id}] Running")
     started_at = Log.clock_timestamp(conn)
