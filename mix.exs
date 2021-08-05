@@ -14,13 +14,6 @@ defmodule ExqlMigration.MixProject do
     ]
   end
 
-  defp dialyzer do
-    [
-      plt_file: {:no_warn, "deps/dialyzer.plt"},
-      plt_add_apps: [:postgrex, :db_connection]
-    ]
-  end
-
   def application do
     [
       extra_applications: [:logger]
@@ -30,6 +23,7 @@ defmodule ExqlMigration.MixProject do
   defp deps do
     [
       {:postgrex, ">= 0.0.0", optional: true},
+      {:excoveralls, "~> 0.12", only: :test},
       {:credo, "~> 1.0", only: [:dev], runtime: false},
       {:dialyxir, "~> 1.0", only: [:dev, :test], runtime: false}
     ]
@@ -42,6 +36,13 @@ defmodule ExqlMigration.MixProject do
       "coveralls.detail": :test,
       "coveralls.post": :test,
       "coveralls.html": :test
+    ]
+  end
+
+  defp dialyzer do
+    [
+      plt_file: {:no_warn, "deps/dialyzer.plt"},
+      plt_add_apps: [:postgrex, :db_connection]
     ]
   end
 end

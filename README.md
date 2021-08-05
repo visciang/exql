@@ -1,21 +1,32 @@
 # ExqlMigration
 
-**TODO: Add description**
+SQL schema migration scripts runner.
 
-## Installation
+No ecto_sql, just postgrex.
+No down script, we go only up!!!  
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `exql_migration` to your list of dependencies in `mix.exs`:
+## Usage
+
+In your app supervisor, start Postgrex and then run a one off task with ExqlMigration.migrate.
+The migration dir should be included in the app release, the migrate function will execute in
+alphabetic order the *.sql scripts not already applied to the target DB.
 
 ```elixir
-def deps do
-  [
-    {:exql_migration, "~> 0.1.0"}
+  migrations_dir = "priv/migrations"
+  
+  postgres_conn = :db
+  postgres_conf = [
+    name: postgres_conn,
+    hostname: "localhost",
+    username: "postgres",
+    password: "postgres",
+    database: "postgres"
   ]
-end
+
+  children = [
+    {Postgrex, postgres_conf},
+    {Task, fn -> ExqlMigration.migrate(postgres_conn, migrations_dir) end}}
+  ]
+
+  Supervisor.start_link(children, ...)
 ```
-
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/exql_migration](https://hexdocs.pm/exql_migration).
-

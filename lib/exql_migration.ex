@@ -1,6 +1,5 @@
 defmodule ExqlMigration do
   require Logger
-
   alias ExqlMigration.{Log, Schema}
 
   @type migration_id :: String.t()
@@ -24,8 +23,9 @@ defmodule ExqlMigration do
         migration_files =
           migrations_dir
           |> File.ls!()
-          |> Enum.sort()
+          |> Enum.filter(&String.ends_with?(&1, ".sql"))
           |> Enum.reject(&applied?(&1, last_migration))
+          |> Enum.sort()
 
         if migration_files == [] do
           Logger.info("Nothing to do, all migration scripts already applied")
@@ -34,7 +34,7 @@ defmodule ExqlMigration do
         end
 
         current_revision = List.last(migration_files, last_migration)
-        Logger.info("Migration completed (current revision: #{current_revision})")
+        Logger.info("Migration completed (current revision: #{inspect(current_revision)})")
       end
     )
 
