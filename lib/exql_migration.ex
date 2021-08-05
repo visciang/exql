@@ -14,7 +14,10 @@ defmodule ExqlMigration do
     Postgrex.transaction(
       conn,
       fn conn ->
+        Logger.info("Migration started")
+
         Log.lock(conn)
+        Logger.info("Acquired migration exclusive lock")
 
         last_migration = Log.last(conn)
 
@@ -24,9 +27,14 @@ defmodule ExqlMigration do
           |> Enum.sort()
           |> Enum.reject(&applied?(&1, last_migration))
 
-        Logger.info("Migration started (last applied migration: #{last_migration})")
-        Enum.each(migration_files, &run(conn, &1, File.read!(Path.join(migrations_dir, &1)), timeout))
-        Logger.info("Migration completed")
+        if migration_files == [] do
+          Logger.info("Nothing to do, all migration script already applied")
+        else
+          Enum.each(migration_files, &run(conn, &1, File.read!(Path.join(migrations_dir, &1)), timeout))
+        end
+
+        current_revision = List.last(migration_files, last_migration)
+        Logger.info("Migration completed (current revision: #{current_revision})")
       end
     )
 
@@ -44,7 +52,7 @@ defmodule ExqlMigration do
   defp run(conn, migration_id, statement, timeout) do
     shasum = :crypto.hash(:sha256, statement) |> Base.encode16()
 
-    Logger.info("[#{migration_id}] Running (timeout: #{timeout})")
+    Logger.info("[#{migration_id}] Running")
     started_at = Log.clock_timestamp(conn)
     Postgrex.query!(conn, statement, [], timeout: timeout)
     Log.insert(conn, migration_id, shasum, started_at)
