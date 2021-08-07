@@ -1,7 +1,7 @@
 # ExqlMigration
 
 ![CI](https://github.com/visciang/exql_migration/workflows/CI/badge.svg)
-[![Coverage Status](https://coveralls.io/repos/github/visciang/exql_migration/badge.svg?branch=main)](https://coveralls.io/github/visciang/exql_migration?branch=main)
+[![Coverage Status](https://coveralls.io/repos/github/visciang/exql_migration/badge.svg?branch=master)](https://coveralls.io/github/visciang/exql_migration?branch=master)
 
 Postgres SQL schema migration scripts runner.
 
