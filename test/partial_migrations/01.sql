@@ -1,1 +1,0 @@
-../all_migrations/01.sql

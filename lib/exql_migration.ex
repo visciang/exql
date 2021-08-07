@@ -1,4 +1,6 @@
 defmodule ExqlMigration do
+  @moduledoc File.read!("README.md")
+
   require Logger
   alias ExqlMigration.{Log, Schema}
 
@@ -10,35 +12,45 @@ defmodule ExqlMigration do
   def migrate(conn, migrations_dir, timeout \\ @default_migration_timeout) do
     Schema.setup(conn)
 
+    Logger.info("Migration started")
+
+    migrations_dir
+    |> migration_files(Log.last_migration(conn))
+    |> Enum.each(&run(conn, &1, File.read!(Path.join(migrations_dir, &1)), timeout))
+
+    Logger.info("Migration completed")
+
+    :ok
+  end
+
+  @spec run(Postgrex.conn(), migration_id(), String.t(), timeout()) :: :ok
+  defp run(conn, migration_id, statement, timeout) do
     Postgrex.transaction(
       conn,
       fn conn ->
-        Logger.info("Migration started")
-
         Log.lock(conn)
-        Logger.info("Acquired migration exclusive lock")
 
-        last_migration = Log.last(conn)
-
-        migration_files =
-          migrations_dir
-          |> File.ls!()
-          |> Enum.filter(&String.ends_with?(&1, ".sql"))
-          |> Enum.reject(&applied?(&1, last_migration))
-          |> Enum.sort()
-
-        if migration_files == [] do
-          Logger.info("Nothing to do, all migration scripts already applied")
-        else
-          Enum.each(migration_files, &run(conn, &1, File.read!(Path.join(migrations_dir, &1)), timeout))
+        unless applied?(migration_id, Log.last_migration(conn)) do
+          Logger.info("[#{migration_id}] Running")
+          Postgrex.query!(conn, statement, [], timeout: :infinity)
+          shasum = :crypto.hash(:sha256, statement) |> Base.encode16(case: :lower)
+          Log.insert(conn, migration_id, shasum)
+          Logger.info("[#{migration_id}] Completed")
         end
-
-        current_revision = List.last(migration_files, last_migration)
-        Logger.info("Migration completed (current revision: #{inspect(current_revision)})")
-      end
+      end,
+      timeout: timeout
     )
 
     :ok
+  end
+
+  @spec migration_files(Path.t(), migration_id()) :: [String.t()]
+  defp migration_files(migrations_dir, last_migration) do
+    migrations_dir
+    |> File.ls!()
+    |> Enum.filter(&String.ends_with?(&1, ".sql"))
+    |> Enum.reject(&applied?(&1, last_migration))
+    |> Enum.sort()
   end
 
   @spec applied?(migration_id(), nil | migration_id()) :: boolean()
@@ -46,18 +58,5 @@ defmodule ExqlMigration do
 
   defp applied?(migration, last_applied) do
     migration <= last_applied
-  end
-
-  @spec run(Postgrex.conn(), migration_id(), String.t(), timeout()) :: :ok
-  defp run(conn, migration_id, statement, timeout) do
-    shasum = :crypto.hash(:sha256, statement) |> Base.encode16(case: :lower)
-
-    Logger.info("[#{migration_id}] Running")
-    started_at = Log.clock_timestamp(conn)
-    Postgrex.query!(conn, statement, [], timeout: timeout)
-    Log.insert(conn, migration_id, shasum, started_at)
-    Logger.info("[#{migration_id}] Completed")
-
-    :ok
   end
 end

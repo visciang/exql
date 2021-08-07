@@ -27,17 +27,17 @@ defmodule ExqlMigrationTest do
 
   test "empty list of migration" do
     ExqlMigration.migrate(@postgrex_conn, "test/no_migrations")
-    assert ExqlMigration.Log.last(@postgrex_conn) == nil
+    assert ExqlMigration.Log.last_migration(@postgrex_conn) == nil
   end
 
   test "basic run" do
     ExqlMigration.migrate(@postgrex_conn, "test/partial_migrations")
-    assert ExqlMigration.Log.last(@postgrex_conn) == "01.sql"
+    assert ExqlMigration.Log.last_migration(@postgrex_conn) == "001.sql"
 
     ExqlMigration.migrate(@postgrex_conn, "test/all_migrations")
-    assert ExqlMigration.Log.last(@postgrex_conn) == "02.sql"
+    assert ExqlMigration.Log.last_migration(@postgrex_conn) == "002.sql"
 
     ExqlMigration.migrate(@postgrex_conn, "test/partial_migrations")
-    assert ExqlMigration.Log.last(@postgrex_conn) == "02.sql"
+    assert ExqlMigration.Log.last_migration(@postgrex_conn) == "002.sql"
   end
 end

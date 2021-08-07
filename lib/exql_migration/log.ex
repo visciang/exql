@@ -1,6 +1,8 @@
 defmodule ExqlMigration.Log do
-  @spec last(Postgrex.conn()) :: nil | String.t()
-  def last(conn) do
+  @moduledoc false
+
+  @spec last_migration(Postgrex.conn()) :: nil | String.t()
+  def last_migration(conn) do
     %Postgrex.Result{rows: [[res]]} = Postgrex.query!(conn, "SELECT max(id) FROM exql_migration.log", [])
     res
   end
@@ -11,18 +13,12 @@ defmodule ExqlMigration.Log do
     :ok
   end
 
-  @spec insert(Postgrex.conn(), String.t(), String.t(), DateTime.t()) :: Postgrex.Result.t()
-  def insert(conn, migration_id, shasum, started_at) do
+  @spec insert(Postgrex.conn(), String.t(), String.t()) :: Postgrex.Result.t()
+  def insert(conn, migration_id, shasum) do
     Postgrex.query!(
       conn,
-      "INSERT INTO exql_migration.log VALUES ($1, $2, $3, clock_timestamp())",
-      [migration_id, shasum, started_at]
+      "INSERT INTO exql_migration.log VALUES ($1, $2, now(), clock_timestamp())",
+      [migration_id, shasum]
     )
-  end
-
-  @spec clock_timestamp(Postgrex.conn()) :: DateTime.t()
-  def clock_timestamp(conn) do
-    %Postgrex.Result{rows: [[res]]} = Postgrex.query!(conn, "SELECT clock_timestamp()", [])
-    res
   end
 end

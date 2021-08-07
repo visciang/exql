@@ -1,4 +1,6 @@
 defmodule ExqlMigration.Schema do
+  @moduledoc false
+
   @create_schema_stmt """
     CREATE SCHEMA IF NOT EXISTS exql_migration
   """

@@ -1,15 +1,23 @@
 # ExqlMigration
 
-SQL schema migration scripts runner.
+Postgres SQL schema migration scripts runner.
 
-No ecto_sql, just postgrex.
-No down script, we go only up!!!  
+For those who:
+
+> No Ecto, just postgrex please!
+> No down script, we go only up! 
+
+Define your SQL migrations under `priv/migrations/*.sql`.
+
+The migration task will execute the `*.sql` scripts not already applied to the target DB in alphabetic order.
+
+Every migration runs in a transaction and acquire a `'LOCK ... SHARE MODE'` ensuring that one and only migration execution can run at a time.
+
+If a migration script fails, the `ExqlMigration.Task` executor stops the application.
 
 ## Usage
 
-In your app supervisor, start Postgrex and then run a one off task with ExqlMigration.migrate.
-The migration dir should be included in the app release, the migrate function will execute in
-alphabetic order the *.sql scripts not already applied to the target DB.
+In your app supervisor, start `Postgrex` and then the `ExqlMigration.Task`.
 
 ```elixir
   migrations_dir = "priv/migrations"
@@ -20,13 +28,29 @@ alphabetic order the *.sql scripts not already applied to the target DB.
     hostname: "localhost",
     username: "postgres",
     password: "postgres",
-    database: "postgres"
+    database: "postgres",
+    pool_size: 5
   ]
 
   children = [
     {Postgrex, postgres_conf},
-    {Task, fn -> ExqlMigration.migrate(postgres_conn, migrations_dir) end}}
+    {ExqlMigration.Task, [db_conn: postgres_conn, migrations_dir: migrations_dir]}
   ]
 
-  Supervisor.start_link(children, ...)
+  opts = [strategy: :one_for_one]
+  Supervisor.start_link(children, opts)
+```
+
+Check the sample app under `./sample_app`.
+
+# Development
+
+```shell
+docker run -d --rm -e POSTGRES_PASSWORD=postgres -p 5432:5432 postgres:alpine
+
+mix deps.get
+mix format
+mix credo --strict --all
+mix dialyzer
+mix coveralls
 ```
