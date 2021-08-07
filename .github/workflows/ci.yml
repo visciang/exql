@@ -58,6 +58,7 @@ jobs:
         run: mix credo --all --strict
 
       - name: Test
+        run: mix coveralls.github
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: mix coveralls.github
+          POSTGRES_HOST: postgres

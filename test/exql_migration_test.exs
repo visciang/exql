@@ -4,7 +4,7 @@ defmodule ExqlMigrationTest do
   @postgrex_conn :test
 
   @postgrex_conf [
-    hostname: "localhost",
+    hostname: System.get_env("POSTGRES_HOST", "localhost"),
     username: "postgres",
     password: "postgres",
     database: "postgres",
