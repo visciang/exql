@@ -4,19 +4,19 @@ defmodule ExqlMigration.Log do
   @type migration_id :: String.t()
 
   @type record :: %{
-    id: migration_id(),
-    sha256: String.t(),
-    exec_start: DateTime.t(),
-    exec_end: DateTime.t()
-  }
+          id: migration_id(),
+          sha256: String.t(),
+          exec_start: DateTime.t(),
+          exec_end: DateTime.t()
+        }
 
   @spec migrations(Postgrex.conn()) :: [record()]
   def migrations(conn) do
     %Postgrex.Result{rows: rows} =
       Postgrex.query!(conn, "SELECT id, sha256, exec_start, exec_end FROM exql_migration.log ORDER BY id", [])
 
-      columns = [:id, :sha256, :exec_start, :exec_end]
-      Enum.map(rows, fn row -> Map.new(Enum.zip(columns, row)) end)
+    columns = [:id, :sha256, :exec_start, :exec_end]
+    Enum.map(rows, fn row -> Map.new(Enum.zip(columns, row)) end)
   end
 
   @spec last_migration(Postgrex.conn()) :: nil | migration_id()
