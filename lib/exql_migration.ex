@@ -4,8 +4,6 @@ defmodule ExqlMigration do
   require Logger
   alias ExqlMigration.{Log, Schema}
 
-  @type migration_id :: String.t()
-
   @default_migration_timeout :infinity
 
   @spec migrate(Postgrex.conn(), Path.t(), timeout()) :: :ok
@@ -15,7 +13,9 @@ defmodule ExqlMigration do
     Logger.info("Migration started")
 
     migrations_dir
-    |> migration_files(Log.last_migration(conn))
+    |> migration_files()
+    |> filter_migrations(Log.last_migration(conn))
+    |> sort_migrations()
     |> Enum.each(&run(conn, &1, File.read!(Path.join(migrations_dir, &1)), timeout))
 
     Logger.info("Migration completed")
@@ -23,7 +23,7 @@ defmodule ExqlMigration do
     :ok
   end
 
-  @spec run(Postgrex.conn(), migration_id(), String.t(), timeout()) :: :ok
+  @spec run(Postgrex.conn(), Log.migration_id(), String.t(), timeout()) :: :ok
   defp run(conn, migration_id, statement, timeout) do
     Postgrex.transaction(
       conn,
@@ -44,19 +44,22 @@ defmodule ExqlMigration do
     :ok
   end
 
-  @spec migration_files(Path.t(), migration_id()) :: [String.t()]
-  defp migration_files(migrations_dir, last_migration) do
+  @spec migration_files(Path.t()) :: [String.t()]
+  defp migration_files(migrations_dir) do
     migrations_dir
     |> File.ls!()
     |> Enum.filter(&String.ends_with?(&1, ".sql"))
-    |> Enum.reject(&applied?(&1, last_migration))
-    |> Enum.sort()
   end
 
-  @spec applied?(migration_id(), nil | migration_id()) :: boolean()
-  defp applied?(_migration, nil), do: false
+  @spec filter_migrations([String.t()], Log.migration_id()) :: [String.t()]
+  defp filter_migrations(migrations, last_migration),
+    do: Enum.reject(migrations, &applied?(&1, last_migration))
 
-  defp applied?(migration, last_applied) do
-    migration <= last_applied
-  end
+  @spec sort_migrations([String.t()]) :: [String.t()]
+  defp sort_migrations(migrations),
+    do: Enum.sort(migrations)
+
+  @spec applied?(Log.migration_id(), nil | Log.migration_id()) :: boolean()
+  defp applied?(migration, last_applied),
+    do: migration <= last_applied
 end
