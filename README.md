@@ -7,7 +7,7 @@ Postgres SQL schema migration scripts runner.
 
 For those who:
 
-> No Ecto, just postgrex please!
+> No Ecto, just Postgrex please!
 > No down script, we go only up! 
 
 Define your SQL migrations under `priv/migrations/*.sql`.
