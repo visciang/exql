@@ -3,20 +3,23 @@
 ![CI](https://github.com/visciang/exql_migration/workflows/CI/badge.svg)
 [![Coverage Status](https://coveralls.io/repos/github/visciang/exql_migration/badge.svg?branch=master)](https://coveralls.io/github/visciang/exql_migration?branch=master)
 
-Postgres SQL schema migration scripts runner.
+`exql_migration` is a minimalist executor for Postgres schema migration scripts.
 
-For those who:
+Good for those who:
 
 > No Ecto, just Postgrex please!
-> No down script, we go only up! 
+> No down script, we go only up!
 
-Define your SQL migrations under `priv/migrations/*.sql`.
-
-The migration task will execute the `*.sql` scripts not already applied to the target DB in alphabetic order.
-
-Every migration runs in a transaction and acquire a `'LOCK ... SHARE MODE'` ensuring that one and only migration execution can run at a time.
+Define your ordered list of SQL migrations under `priv/migrations/*.sql` and add `ExqlMigration.Task` to you app supervisor.
+The migration task will execute the `*.sql` scripts not already applied to the target DB.
+The excution order follows the scripts filename alphabetic order.
 
 If a migration script fails, the `ExqlMigration.Task` executor stops the application.
+
+## Multi instance deployment safety
+
+If you have n instances of your app deployed, each of them can safely run the migration task since every migration runs
+in a transaction and acquire a `'LOCK ... SHARE MODE'` ensuring that one and only migration execution can run at a time.
 
 ## Usage
 
