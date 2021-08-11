@@ -6,14 +6,26 @@ defmodule ExqlMigration.Task do
   use Task, restart: :transient
   require Logger
 
-  @spec start_link(db_conn: Postgrex.conn(), migrations_dir: Path.t()) :: {:ok, pid}
-  def start_link(db_conn: db_conn, migrations_dir: migrations_dir) do
-    Task.start_link(fn -> run(db_conn, migrations_dir) end)
+  @type opts :: [
+          {:db_conn, Postgrex.conn()}
+          | {:migrations_dir, Path.t()}
+          | {:timeout, timeout()}
+          | {:transactional, boolean()}
+        ]
+
+  @spec start_link(opts()) :: {:ok, pid}
+  def start_link(opts) do
+    db_conn = Keyword.fetch!(opts, :db_conn)
+    migrations_dir = Keyword.fetch!(opts, :migrations_dir)
+    timeout = Keyword.get(opts, :timeout, :infinity)
+    transactional = Keyword.get(opts, :transactional, true)
+
+    Task.start_link(fn -> run(db_conn, migrations_dir, timeout, transactional) end)
   end
 
-  @spec run(Postgrex.conn(), Path.t()) :: :ok
-  defp run(db_conn, migrations_dir) do
-    ExqlMigration.migrate(db_conn, migrations_dir)
+  @spec run(Postgrex.conn(), Path.t(), timeout(), boolean()) :: :ok
+  defp run(db_conn, migrations_dir, timeout, transactional) do
+    ExqlMigration.migrate(db_conn, migrations_dir, timeout, transactional)
   rescue
     exc ->
       Logger.emergency("Migration failed")

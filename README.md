@@ -40,7 +40,12 @@ In your app supervisor, start `Postgrex` and then the `ExqlMigration.Task`.
 
   children = [
     {Postgrex, postgres_conf},
-    {ExqlMigration.Task, [db_conn: postgres_conn, migrations_dir: migrations_dir]}
+    {ExqlMigration.Task, [
+        db_conn: postgres_conn,
+        migrations_dir: migrations_dir,
+        timeout: 5_000,      # default :infinity
+        transactional: true  # default true, if false You know What you are doing
+      ]}
   ]
 
   opts = [strategy: :one_for_one]
