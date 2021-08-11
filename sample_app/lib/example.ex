@@ -8,7 +8,7 @@ defmodule Example do
 
     children = [
       {Postgrex, postgrex_conf},
-      {ExqlMigration.Task, [db_conn: db_conn, migrations_dir: migrations_dir]}
+      {ExqlMigration.Supervisor, [db_conn: db_conn, migrations_dir: migrations_dir]}
     ]
 
     opts = [strategy: :one_for_one]

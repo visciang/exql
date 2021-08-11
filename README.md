@@ -40,7 +40,7 @@ In your app supervisor, start `Postgrex` and then the `ExqlMigration.Task`.
 
   children = [
     {Postgrex, postgres_conf},
-    {ExqlMigration.Task, [
+    {ExqlMigration.Supervisor, [
         db_conn: postgres_conn,
         migrations_dir: migrations_dir,
         timeout: 5_000,      # default :infinity
@@ -50,6 +50,17 @@ In your app supervisor, start `Postgrex` and then the `ExqlMigration.Task`.
 
   opts = [strategy: :one_for_one]
   Supervisor.start_link(children, opts)
+```
+
+if you have multiple DBs to setup:
+
+```elixir
+    children = [
+      Supervisor.child_spec({Postgrex, db_A_conf}, id: :postgrex_A),
+      Supervisor.child_spec({ExqlMigration.Supervisor, [db_conn: db_A_conn, migrations_dir: db_A_migrations_dir]}, id: :exql_db_A),
+      Supervisor.child_spec({Postgrex, db_B_conf}, id: :postgrex_B),
+      Supervisor.child_spec({ExqlMigration.Supervisor, [db_conn: db_B_conn, migrations_dir: db_B_migrations_dir]}, id: :exql_db_B)
+    ]
 ```
 
 Check the sample app under `./sample_app`.

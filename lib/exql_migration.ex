@@ -8,7 +8,7 @@ defmodule ExqlMigration do
   def migrate(conn, migrations_dir, timeout, transactional) do
     Schema.setup(conn)
 
-    Logger.info("Migration started")
+    Logger.info("Migration started (dir: #{inspect(migrations_dir)})")
 
     migrations_dir
     |> migration_files()

@@ -1,9 +1,10 @@
 # coveralls-ignore-start
 
-defmodule ExqlMigration.Task do
-  @moduledoc "Migration runner Task"
+defmodule ExqlMigration.Supervisor do
+  @moduledoc "Migration runner Supervisor"
 
-  use Task, restart: :transient
+  use Supervisor
+
   require Logger
 
   @type opts :: [
@@ -13,19 +14,22 @@ defmodule ExqlMigration.Task do
           | {:transactional, boolean()}
         ]
 
-  @spec start_link(opts()) :: {:ok, pid}
+  @spec start_link(opts()) :: Supervisor.on_start()
   def start_link(opts) do
     db_conn = Keyword.fetch!(opts, :db_conn)
     migrations_dir = Keyword.fetch!(opts, :migrations_dir)
     timeout = Keyword.get(opts, :timeout, :infinity)
     transactional = Keyword.get(opts, :transactional, true)
 
-    Task.start_link(fn -> run(db_conn, migrations_dir, timeout, transactional) end)
+    Supervisor.start_link(__MODULE__, {db_conn, migrations_dir, timeout, transactional})
   end
 
-  @spec run(Postgrex.conn(), Path.t(), timeout(), boolean()) :: :ok
-  defp run(db_conn, migrations_dir, timeout, transactional) do
+  @impl Supervisor
+  @spec init({Postgrex.conn(), Path.t(), timeout(), boolean()}) :: :ignore
+  def init({db_conn, migrations_dir, timeout, transactional}) do
     ExqlMigration.migrate(db_conn, migrations_dir, timeout, transactional)
+
+    :ignore
   rescue
     exc ->
       Logger.emergency("Migration failed")
