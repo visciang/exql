@@ -12,7 +12,7 @@ Good for those who:
 
 Define your ordered list of SQL migrations under `priv/migrations/*.sql` and add `ExqlMigration.Task` to you app supervisor.
 The migration task will execute the `*.sql` scripts not already applied to the target DB.
-The excution order follows the scripts filename alphabetic order.
+The execution order follows the scripts filename alphabetic order.
 
 If a migration script fails, the `ExqlMigration.Task` executor stops the application.
 

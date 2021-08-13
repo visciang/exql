@@ -25,6 +25,13 @@ defmodule ExqlMigration do
   defp run(conn, migration_id, statement, timeout, transactional) do
     Logger.info("[#{migration_id}] Running")
 
+    statement = """
+    do $$
+    begin
+      #{statement}
+    end $$
+    """
+
     if transactional do
       Postgrex.transaction(
         conn,
