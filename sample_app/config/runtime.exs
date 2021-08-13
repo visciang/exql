@@ -1,12 +1,15 @@
 import Config
 
-config :postgrex,
-  name: :db,
+config :example, :db_postgres,
   hostname: "localhost",
   username: "postgres",
   password: "postgres",
   database: "postgres",
-  pool_size: 5
+  pool_size: 1
 
-config :exql_migration,
-  migration_dir: "priv/migrations"
+config :example, :db_mydb,
+  hostname: "localhost",
+  username: "postgres",
+  password: "postgres",
+  database: "mydb",
+  pool_size: 5

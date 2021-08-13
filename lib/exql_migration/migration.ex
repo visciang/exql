@@ -1,6 +1,6 @@
 # coveralls-ignore-start
 
-defmodule ExqlMigration.Supervisor do
+defmodule ExqlMigration.Migration do
   @moduledoc "Migration runner Supervisor"
 
   use Supervisor

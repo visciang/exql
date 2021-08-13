@@ -19,8 +19,8 @@ defmodule ExqlMigrationTest do
 
   setup do
     on_exit(fn ->
-      Postgrex.query!(@postgrex_conn, "DROP SCHEMA IF EXISTS exql_migration CASCADE", [])
-      Postgrex.query!(@postgrex_conn, "DROP SCHEMA IF EXISTS test CASCADE", [])
+      Postgrex.query!(@postgrex_conn, "drop schema if exists exql_migration cascade", [])
+      Postgrex.query!(@postgrex_conn, "drop schema if exists test cascade", [])
     end)
 
     :ok
@@ -53,5 +53,17 @@ defmodule ExqlMigrationTest do
 
     ExqlMigration.migrate(@postgrex_conn, "test/all_migrations", @timeout, true)
     assert ^all = ExqlMigration.Log.migrations(@postgrex_conn)
+  end
+
+  test "create DB" do
+    on_exit(fn ->
+      Postgrex.query!(@postgrex_conn, "drop database test_db", [])
+    end)
+
+    ExqlMigration.create_db(@postgrex_conn, "test_db")
+    ExqlMigration.create_db(@postgrex_conn, "test_db")
+
+    res = Postgrex.query!(@postgrex_conn, "select true from pg_database where datname = $1", ["test_db"])
+    assert %Postgrex.Result{num_rows: 1} = res
   end
 end

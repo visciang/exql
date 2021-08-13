@@ -4,6 +4,23 @@ defmodule ExqlMigration do
   require Logger
   alias ExqlMigration.{Log, Schema}
 
+  @spec create_db(Postgrex.conn(), String.t()) :: :ok
+  def create_db(conn, name) do
+    case Postgrex.query(conn, "create database #{name}", []) do
+      {:ok, _} ->
+        Logger.info("Create DB #{inspect(name)}")
+        :ok
+
+      {:error, %Postgrex.Error{postgres: %{code: :duplicate_database}}} ->
+        :ok
+
+      error ->
+        # coveralls-ignore-start
+        raise "#{inspect(error)}"
+        # coveralls-ignore-end
+    end
+  end
+
   @spec migrate(Postgrex.conn(), Path.t(), timeout(), boolean()) :: :ok
   def migrate(conn, migrations_dir, timeout, transactional) do
     Schema.setup(conn)
