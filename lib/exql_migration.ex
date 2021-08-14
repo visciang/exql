@@ -6,19 +6,16 @@ defmodule ExqlMigration do
 
   @spec create_db(Postgrex.conn(), String.t()) :: :ok
   def create_db(conn, name) do
-    case Postgrex.query(conn, "create database #{name}", []) do
-      {:ok, _} ->
-        Logger.info("Create DB #{inspect(name)}")
-        :ok
-
-      {:error, %Postgrex.Error{postgres: %{code: :duplicate_database}}} ->
-        :ok
-
-      error ->
-        # coveralls-ignore-start
-        raise "#{inspect(error)}"
-        # coveralls-ignore-end
+    # if two instances of the app runs concurrently, exists_db? + query!
+    # could raise since we do not acquire locks and execute this two
+    # operation transactionally (create database can't run in a transaction).
+    # BTW, it's fine. If we hit this race condition the supervisor will retry
+    unless exists_db?(conn, name) do
+      Logger.info("Create DB #{inspect(name)}")
+      Postgrex.query!(conn, "create database #{name}", [])
     end
+
+    :ok
   end
 
   @spec migrate(Postgrex.conn(), Path.t(), timeout(), boolean()) :: :ok
@@ -39,13 +36,13 @@ defmodule ExqlMigration do
   end
 
   @spec run(Postgrex.conn(), Log.migration_id(), String.t(), timeout(), boolean()) :: :ok
-  defp run(conn, migration_id, statement, timeout, transactional) do
+  defp run(conn, migration_id, statements, timeout, transactional) do
     Logger.info("[#{migration_id}] Running")
 
-    statement = """
+    statements = """
     do $$
     begin
-      #{statement}
+      #{statements}
     end $$
     """
 
@@ -54,25 +51,25 @@ defmodule ExqlMigration do
         conn,
         fn conn ->
           Log.lock(conn)
-
-          unless applied?(migration_id, Log.last_migration(conn)) do
-            Postgrex.query!(conn, statement, [], timeout: :infinity)
-            shasum = :crypto.hash(:sha256, statement) |> Base.encode16(case: :lower)
-            Log.insert(conn, migration_id, shasum)
-          end
+          run_statememnts(conn, migration_id, statements, :infinity)
         end,
         timeout: timeout
       )
     else
-      unless applied?(migration_id, Log.last_migration(conn)) do
-        Postgrex.query!(conn, statement, [], timeout: timeout)
-        shasum = :crypto.hash(:sha256, statement) |> Base.encode16(case: :lower)
-        Log.insert(conn, migration_id, shasum)
-      end
+      run_statememnts(conn, migration_id, statements, timeout)
     end
 
     Logger.info("[#{migration_id}] Completed")
 
+    :ok
+  end
+
+  @spec run_statememnts(Postgrex.conn(), Log.migration_id(), String.t(), timeout()) :: :ok
+  defp run_statememnts(conn, migration_id, statements, timeout) do
+    Logger.debug(statements)
+    Postgrex.query!(conn, statements, [], timeout: timeout)
+    shasum = :crypto.hash(:sha256, statements) |> Base.encode16(case: :lower)
+    Log.insert(conn, migration_id, shasum)
     :ok
   end
 
@@ -94,4 +91,10 @@ defmodule ExqlMigration do
   @spec applied?(Log.migration_id(), nil | Log.migration_id()) :: boolean()
   defp applied?(migration, last_applied),
     do: migration <= last_applied
+
+  @spec exists_db?(Postgrex.conn(), String.t()) :: boolean()
+  defp exists_db?(conn, name) do
+    res = Postgrex.query!(conn, "select true from pg_database where datname = $1", [name])
+    match?(%Postgrex.Result{num_rows: 1}, res)
+  end
 end
