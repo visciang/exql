@@ -10,11 +10,11 @@ Good for those who:
 > No Ecto, just Postgrex please!
 > No down script, we go only up!
 
-Define your ordered list of SQL migrations under `priv/migrations/*.sql` and add `ExqlMigration.Task` to you app supervisor.
+Define your ordered list of SQL migrations under `priv/migrations/*.sql` and add `ExqlMigration.Migration` to you app supervisor.
 The migration task will execute the `*.sql` scripts not already applied to the target DB.
 The execution order follows the scripts filename alphabetic order.
 
-If a migration script fails, the `ExqlMigration.Task` executor stops the application.
+If a migration script fails, the `ExqlMigration.Migration` executor stops the application.
 
 ## Multi instance deployment safety
 
@@ -23,7 +23,7 @@ in a transaction and acquire a `'LOCK ... SHARE MODE'` ensuring that one and onl
 
 ## Usage
 
-In your app supervisor, start `Postgrex` and then the `ExqlMigration.Task`.
+In your app supervisor, start `Postgrex` and then the `ExqlMigration.Migration`.
 
 ```elixir
 migrations_dir = "priv/migrations"
