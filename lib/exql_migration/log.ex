@@ -1,4 +1,4 @@
-defmodule ExqlMigration.Log do
+defmodule Exql.Migration.Log do
   @moduledoc false
 
   @type migration_id :: String.t()

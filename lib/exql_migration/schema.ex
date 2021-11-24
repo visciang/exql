@@ -1,4 +1,4 @@
-defmodule ExqlMigration.Schema do
+defmodule Exql.Migration.Schema do
   @moduledoc false
 
   @create_schema_stmt """
