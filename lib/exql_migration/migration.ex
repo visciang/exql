@@ -1,6 +1,6 @@
 # coveralls-ignore-start
 
-defmodule ExqlMigration.Migration do
+defmodule Exql.Migration.Migration do
   @moduledoc "Migration runner Supervisor"
 
   use Supervisor
@@ -27,7 +27,7 @@ defmodule ExqlMigration.Migration do
   @impl Supervisor
   @spec init({Postgrex.conn(), Path.t(), timeout(), boolean()}) :: :ignore
   def init({db_conn, migrations_dir, timeout, transactional}) do
-    ExqlMigration.migrate(db_conn, migrations_dir, timeout, transactional)
+    Exql.Migration.migrate(db_conn, migrations_dir, timeout, transactional)
 
     :ignore
   rescue

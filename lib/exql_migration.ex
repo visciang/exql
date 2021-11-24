@@ -1,8 +1,8 @@
-defmodule ExqlMigration do
-  @moduledoc File.read!("README.md")
+defmodule Exql.Migration do
+  @moduledoc false
 
   require Logger
-  alias ExqlMigration.{Log, Schema}
+  alias Exql.Migration.{Log, Schema}
 
   @spec create_db(Postgrex.conn(), String.t()) :: :ok
   def create_db(conn, name) do
