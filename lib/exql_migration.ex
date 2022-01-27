@@ -51,12 +51,12 @@ defmodule Exql.Migration do
         conn,
         fn conn ->
           Log.lock(conn)
-          run_statememnts(conn, migration_id, statements, :infinity)
+          run_statements(conn, migration_id, statements, :infinity)
         end,
         timeout: timeout
       )
     else
-      run_statememnts(conn, migration_id, statements, timeout)
+      run_statements(conn, migration_id, statements, timeout)
     end
 
     Logger.info("[#{migration_id}] Completed")
@@ -64,8 +64,8 @@ defmodule Exql.Migration do
     :ok
   end
 
-  @spec run_statememnts(Postgrex.conn(), Log.migration_id(), String.t(), timeout()) :: :ok
-  defp run_statememnts(conn, migration_id, statements, timeout) do
+  @spec run_statements(Postgrex.conn(), Log.migration_id(), String.t(), timeout()) :: :ok
+  defp run_statements(conn, migration_id, statements, timeout) do
     Logger.debug(statements)
     Postgrex.query!(conn, statements, [], timeout: timeout)
     shasum = :crypto.hash(:sha256, statements) |> Base.encode16(case: :lower)
