@@ -8,7 +8,7 @@ defmodule Exql.Migration.Migration do
   require Logger
 
   @type opts :: [
-          {:db_conn, Postgrex.conn()}
+          {:conn, Postgrex.conn()}
           | {:migrations_dir, Path.t()}
           | {:timeout, timeout()}
           | {:transactional, boolean()}
@@ -16,18 +16,18 @@ defmodule Exql.Migration.Migration do
 
   @spec start_link(opts()) :: Supervisor.on_start()
   def start_link(opts) do
-    db_conn = Keyword.fetch!(opts, :db_conn)
+    conn = Keyword.fetch!(opts, :conn)
     migrations_dir = Keyword.fetch!(opts, :migrations_dir)
     timeout = Keyword.get(opts, :timeout, :infinity)
     transactional = Keyword.get(opts, :transactional, true)
 
-    Supervisor.start_link(__MODULE__, {db_conn, migrations_dir, timeout, transactional})
+    Supervisor.start_link(__MODULE__, {conn, migrations_dir, timeout, transactional})
   end
 
   @impl Supervisor
   @spec init({Postgrex.conn(), Path.t(), timeout(), boolean()}) :: :ignore
-  def init({db_conn, migrations_dir, timeout, transactional}) do
-    Exql.Migration.migrate(db_conn, migrations_dir, timeout, transactional)
+  def init({conn, migrations_dir, timeout, transactional}) do
+    Exql.Migration.migrate(conn, migrations_dir, timeout, transactional)
 
     :ignore
   rescue

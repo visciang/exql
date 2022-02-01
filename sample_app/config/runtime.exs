@@ -1,11 +1,10 @@
 import Config
 
-config :example, :db_postgres,
+config :example, :postgres_credentials,
   hostname: "localhost",
   username: "postgres",
   password: "postgres",
-  database: "postgres",
-  pool_size: 1
+  database: "postgres"
 
 config :example, :db_mydb,
   hostname: "localhost",
