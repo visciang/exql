@@ -20,7 +20,7 @@ defmodule Example.MixProject do
 
   def deps do
     [
-      {:exql_migration, path: "../"},
+      {:exql, path: "../"},
       {:postgrex, ">= 0.0.0"}
     ]
   end

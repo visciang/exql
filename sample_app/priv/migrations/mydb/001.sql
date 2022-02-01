@@ -1,1 +1,3 @@
-perform 1;
+create table test (
+    id text
+);
