@@ -16,7 +16,7 @@ res = Postgrex.query!(@postgrex_conn, q, "select x, y from table")
 
 ## Exql.Migration
 
-A is a minimalist executor for Postgres schema migration scripts.
+A minimalist executor for Postgres schema migration scripts.
 
 Define your ordered list of SQL migrations under `priv/migrations/*.sql` and add `Exql.Migration` to you app supervisor.
 The migration task will execute the `*.sql` scripts not already applied to the target DB.
@@ -31,47 +31,13 @@ in a transaction and acquire a `'LOCK ... SHARE MODE'` ensuring that one and onl
 
 ### Usage
 
-In your app supervisor, start `Postgrex` and then the `Exql.Migration`.
+In your application you can call the `Exql.Migration.create_db` and `Exql.Migration.migrate` functions:
 
 ```elixir
-migrations_dir = "priv/migrations"
-
-postgres_conn = :db
-postgres_conf = [
-  name: postgres_conn,
-  hostname: "localhost",
-  username: "postgres",
-  password: "postgres",
-  database: "postgres",
-  pool_size: 5
-]
-
-children = [
-  {Postgrex, postgres_conf},
-  {Exql.Migration, [
-      db_conn: postgres_conn,
-      migrations_dir: migrations_dir,
-      timeout: 5_000,      # default :infinity
-      transactional: true  # default true, if false You know What you are doing
-    ]}
-]
-
-opts = [strategy: :one_for_one]
-Supervisor.start_link(children, opts)
+  Exql.Migration.create_db(postgres_credentials, "db_name")
+  Exql.Migration.migrate(mydb_credentials, "priv/migrations/db_name")
 ```
 
-if you have multiple DBs to setup:
-
-```elixir
-children = [
-  Supervisor.child_spec({Postgrex, db_A_conf}, id: :postgrex_A),
-  Supervisor.child_spec({Exql.Migration, [db_conn: db_A_conn, migrations_dir: db_A_migrations_dir]}, id: :exql_db_A),
-  Supervisor.child_spec({Postgrex, db_B_conf}, id: :postgrex_B),
-  Supervisor.child_spec({Exql.Migration, [db_conn: db_B_conn, migrations_dir: db_B_migrations_dir]}, id: :exql_db_B)
-]
-```
-
-`Exql.CreateDB` can be included in the supervision tree to create (if not exists) a database.
 Check the sample app under `./sample_app` for more details.
 
 # Development

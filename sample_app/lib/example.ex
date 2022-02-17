@@ -5,13 +5,12 @@ defmodule Example do
     postgres_credentials = Application.fetch_env!(:example, :postgres_credentials)
     mydb_conf = Application.fetch_env!(:example, :db_mydb)
 
+    Exql.Migration.create_db(postgres_credentials, mydb_conf[:database])
+    Exql.Migration.migrate(mydb_conf, mydb_conf[:migration_dir])
+
     children = [
-      # create "mydb", connecting to "postgres" database
-      {Exql.Migration.CreateDB, [credentials: postgres_credentials, db_name: mydb_conf[:database]]},
-      # database "mydb" connection pool
-      Supervisor.child_spec({Postgrex, mydb_conf}, id: :db_mydb),
-      # database "mydb" schema migrations
-      {Exql.Migration.Migration, [conn: mydb_conf[:name], migrations_dir: mydb_conf[:migration_dir]]}
+      {Postgrex, mydb_conf}
+      # ...
     ]
 
     opts = [strategy: :one_for_one]
