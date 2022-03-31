@@ -7,11 +7,45 @@ Few little things to work directly with `Postgrex`.
 
 ## Exql.Query
 
-### Results as a list of maps
+### Postgrex.Result as a list of maps
 
 ```elixir
-res = Postgrex.query!(@postgrex_conn, q, "select x, y from table")
-[%{"x" => x, "y" => y}, ...] = Query.result(res)
+res = Postgrex.query!(conn, "select x, y from table", [])
+[%{"x" => x, "y" => y}, ...] = Exql.Query.result_to_map(res)
+```
+
+### Named parameters query
+
+```elixir
+{:ok, q, p} = Exql.Query.named_params("insert into a_table (x, y1, y2) values (:x, :y, :y)", %{x: "X", y: "Y"})
+
+Postgrex.query!(conn, q, p)
+```
+
+### Usage
+
+You may define a convenient wrapper around the two functions above:
+
+```elixir
+def query!(conn, stmt, args \\ %{}, opts \\ []) do
+  {:ok, q, p} = Exql.Query.named_params(stmt, args)
+  res = Postgrex.query!(conn, q, p, opts)
+  Query.result_to_map(res)
+end
+```
+
+so that this:
+
+```elixir
+{:ok, q, p} = Exql.Query.named_params("insert into a_table (x, y1, y2) values (:x, :y, :y)", %{x: "X", y: "Y"})
+res = Postgrex.query!(conn, q, p)
+Exql.Query.result_to_map(res)
+```
+
+become this:
+
+```elixir
+query!("insert into a_table (x, y1, y2) values (:x, :y, :y)", %{x: "X", y: "Y"})
 ```
 
 ## Exql.Migration
@@ -34,8 +68,8 @@ in a transaction and acquire a `'LOCK ... SHARE MODE'` ensuring that one and onl
 In your application you can call the `Exql.Migration.create_db` and `Exql.Migration.migrate` functions:
 
 ```elixir
-  Exql.Migration.create_db(postgres_credentials, "db_name")
-  Exql.Migration.migrate(mydb_credentials, "priv/migrations/db_name")
+Exql.Migration.create_db(postgres_credentials, "db_name")
+Exql.Migration.migrate(mydb_credentials, "priv/migrations/db_name")
 ```
 
 Check the sample app under `./sample_app` for more details.

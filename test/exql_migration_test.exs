@@ -1,5 +1,5 @@
 defmodule Test.Exql.Migration do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   alias Exql.Migration
 
   @timeout 1_000
