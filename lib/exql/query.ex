@@ -3,7 +3,7 @@ defmodule Exql.Query do
 
   @named_params_re ~r/
     (?:"[^"]+") |
-    (?:\'[^\']*\') |
+    (?:'[^']*') |
     (?:[^:])(?P<var>:[\w-]+)(?:[^:]?)
   /x
 
