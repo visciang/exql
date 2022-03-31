@@ -16,9 +16,14 @@ res = Postgrex.query!(conn, "select x, y from table", [])
 
 ### Named parameters query
 
-```elixir
-{:ok, q, p} = Exql.Query.named_params("insert into a_table (x, y1, y2) values (:x, :y, :y)", %{x: "X", y: "Y"})
+This function can be used to get rid of the query positional parameters and use named ones.
 
+```elixir
+# positional parameters:
+Postgrex.query!(conn, "insert into a_table (x, y1, y2) values ($1, $2, $2)", ["X", "Y"])
+
+# named parameters:
+{:ok, q, p} = Exql.Query.named_params("insert into a_table (x, y1, y2) values (:x, :y, :y)", %{x: "X", y: "Y"})
 Postgrex.query!(conn, q, p)
 ```
 
@@ -34,15 +39,7 @@ def query!(conn, stmt, args \\ %{}, opts \\ []) do
 end
 ```
 
-so that this:
-
-```elixir
-{:ok, q, p} = Exql.Query.named_params("insert into a_table (x, y1, y2) values (:x, :y, :y)", %{x: "X", y: "Y"})
-res = Postgrex.query!(conn, q, p)
-Exql.Query.result_to_map(res)
-```
-
-become this:
+And just write:
 
 ```elixir
 query!("insert into a_table (x, y1, y2) values (:x, :y, :y)", %{x: "X", y: "Y"})
