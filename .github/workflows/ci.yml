@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
 
     container:
-      image: elixir:1.12.2
+      image: elixir:1.16.1
 
     services:
       postgres:
@@ -28,10 +28,10 @@ jobs:
           --health-retries 5
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Retrieve Cached Dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: mix-cache
         with:
           path: |
