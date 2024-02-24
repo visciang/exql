@@ -1,6 +1,6 @@
 # Exql
 
-![CI](https://github.com/visciang/exql/workflows/CI/badge.svg)
+[![CI](https://github.com/visciang/exql/actions/workflows/ci.yml/badge.svg)](https://github.com/visciang/exql/actions/workflows/ci.yml)
 [![Coverage Status](https://coveralls.io/repos/github/visciang/exql/badge.svg?branch=master)](https://coveralls.io/github/visciang/exql?branch=master)
 
 Few little things to work directly with `Postgrex`.
